@@ -3,27 +3,26 @@
 public class DnsMessage
 {
     public Header Header = new();
-    public Question Question = new();
+    public List<Question> Questions = new List<Question>()
+        { new Question("codecrafters.io", 1, 1)};
     public Answer Answer = new();
     public Authority Authority = new();
     public Additional Additional = new();
     
     public byte[] Encode()
     {
-        Header.Id = 1234;
-        Header.QueryResponse = true;
-        Header.OpCode = 0;
-        Header.AuthoritativeAnswer = false;
-        Header.TruncatedMessage = false;
-        Header.RecursionDesired = false;
-        Header.RecursionAvailable = false;
-        Header.Reserved = 0;
-        Header.ResponseCode = 0;
-        Header.QuestionCount = 0;
-        Header.AnswerCount = 0;
-        Header.AuthorityCount = 0;
-        Header.AdditionalCount = 0;
+        var message = Header.Encode().Concat(GetQuestionBytes()).ToArray();
         
-        return Header.Encode();
+        return message;
+    }
+
+    private byte[] GetQuestionBytes()
+    {
+        var result = new List<byte>();
+        foreach (var question in Questions)
+        {
+            result.AddRange(question.Encode());
+        }
+        return result.ToArray();
     }
 }
