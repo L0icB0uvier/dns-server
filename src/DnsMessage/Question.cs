@@ -23,7 +23,7 @@ public class Question
         ByteManipulationHelper.AddUShortToList(Type, questionBytes);
         ByteManipulationHelper.AddUShortToList(Class, questionBytes);
         
-        Console.WriteLine($"Question sent bytes: {BitConverter.ToString(questionBytes.ToArray())}");
+        //Console.WriteLine($"Question sent bytes: {BitConverter.ToString(questionBytes.ToArray())}");
         return questionBytes.ToArray();
     }
 

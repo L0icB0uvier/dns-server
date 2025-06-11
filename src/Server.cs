@@ -16,16 +16,22 @@ UdpClient udpClient = new UdpClient(udpEndPoint);
 
 while (true)
 {
+    Console.WriteLine("Request Starts");
     // Receive data
     IPEndPoint sourceEndPoint = new IPEndPoint(IPAddress.Any, 0);
     byte[] receivedData = udpClient.Receive(ref sourceEndPoint);
-    string receivedString = Encoding.ASCII.GetString(receivedData);
-
-    Console.WriteLine($"Received {receivedData.Length} bytes from {sourceEndPoint}: {receivedString}");
-
+    
+    string receivedBytes = BitConverter.ToString(receivedData);
+    Console.WriteLine($"Received {receivedData.Length} bytes from {sourceEndPoint}: {receivedBytes}");
+    
+    var message = new DnsMessage(receivedData);
     // Create an empty response
-    byte[] response = new DnsMessage().Encode();
+    byte[] response = message.Encode();
+    string responseBytes = BitConverter.ToString(response);
+    Console.WriteLine($"Sending {responseBytes.Length} bytes to {sourceEndPoint}: {responseBytes}");
     
     // Send response
     udpClient.Send(response, response.Length, sourceEndPoint);
+    Console.WriteLine("Request Ends");
+
 }

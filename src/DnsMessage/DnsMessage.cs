@@ -2,7 +2,7 @@
 
 public class DnsMessage
 {
-    public Header Header = new Header(1234, questionCount:1, answerCount:1);
+    public Header Header;
     public List<Question> Questions = new List<Question>()
     {
         new Question("codecrafters.io", 1, 1)
@@ -15,6 +15,11 @@ public class DnsMessage
     
     public Authority Authority = new();
     public Additional Additional = new();
+    
+    public DnsMessage(byte[] receivedData)
+    {
+        Header = new Header(receivedData);
+    }
     
     public byte[] Encode()
     {
