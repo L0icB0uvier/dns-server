@@ -2,16 +2,27 @@
 
 public class DnsMessage
 {
-    public Header Header = new();
+    public Header Header = new Header(1234, questionCount:1, answerCount:1);
     public List<Question> Questions = new List<Question>()
-        { new Question("codecrafters.io", 1, 1)};
-    public Answer Answer = new();
+    {
+        new Question("codecrafters.io", 1, 1)
+    };
+    
+    public List<Answer> Answers = new List<Answer>()
+    {
+        new Answer("codecrafters.io")
+    };
+    
     public Authority Authority = new();
     public Additional Additional = new();
     
     public byte[] Encode()
     {
-        var message = Header.Encode().Concat(GetQuestionBytes()).ToArray();
+        var message = 
+            Header.Encode()
+            .Concat(GetQuestionBytes())
+            .Concat(GetAnswerBytes())
+            .ToArray();
         
         return message;
     }
@@ -22,6 +33,16 @@ public class DnsMessage
         foreach (var question in Questions)
         {
             result.AddRange(question.Encode());
+        }
+        return result.ToArray();
+    }
+    
+    private byte[] GetAnswerBytes()
+    {
+        var result = new List<byte>();
+        foreach (var answer in Answers)
+        {
+            result.AddRange(answer.Encode());
         }
         return result.ToArray();
     }
