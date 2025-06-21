@@ -2,23 +2,37 @@
 
 public class DnsMessage
 {
-    public Header Header;
-    public List<Question> Questions = new List<Question>()
-    {
-        new Question("codecrafters.io", 1, 1)
-    };
+    private Header _header;
+    private List<Question> _questions;
+    private List<Answer> _answers;
+    private Authority _authority;
+    private Additional _additional;
     
-    public List<Answer> Answers = new List<Answer>()
-    {
-        new Answer("codecrafters.io")
-    };
+    public Header Header => _header;
+    public List<Question> Questions => _questions;
     
-    public Authority Authority = new();
-    public Additional Additional = new();
+    public List<Answer> Answers => _answers;
     
-    public DnsMessage(byte[] receivedData)
+    public Authority Authority => _authority;
+    public Additional Additional => _additional;
+
+    public DnsMessage()
     {
-        Header = new Header(receivedData);
+        _header = null;
+        _questions = new List<Question>();
+        _answers = new List<Answer>();
+        _authority = null;
+        _additional = null;
+    }
+
+    public DnsMessage(Header header, List<Question> questions, List<Answer> answers, Authority authority,
+        Additional additional)
+    {
+        _header = header;
+        _questions = questions;
+        _answers = answers;
+        _authority = authority;
+        _additional = additional;
     }
     
     public byte[] Encode()
@@ -30,6 +44,22 @@ public class DnsMessage
             .ToArray();
         
         return message;
+    }
+
+    public void Decode(byte[] receivedData)
+    {
+        _header = new Header();
+        _header.Decode(receivedData.AsSpan(0, 12).ToArray());
+        
+        int index = 12;
+        for (var i = 0; i < _header.QuestionCount; i++)
+        {
+            var remainingBytes = receivedData.Skip(index).ToArray();
+            var question = new Question();
+            var bytesRead = question.Decode(remainingBytes);
+            _questions.Add(question);
+            index += bytesRead;
+        }
     }
 
     private byte[] GetQuestionBytes()

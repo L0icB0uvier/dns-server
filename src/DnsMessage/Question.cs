@@ -15,6 +15,13 @@ public class Question
         Class = @class;
     }
 
+    public Question()
+    {
+        Name = new LabelSection();
+        Type = 1;
+        Class = 1;       
+    }
+
     public byte[] Encode()
     {
         List<byte> questionBytes = new List<byte>();
@@ -27,5 +34,11 @@ public class Question
         return questionBytes.ToArray();
     }
 
-
+    public int Decode(byte[] bytes)
+    {
+        var nameBytesUsed = Name.Decode(bytes);
+        Type = BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(nameBytesUsed, 2));
+        Class = BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(nameBytesUsed + 2, 2));
+        return nameBytesUsed + 4;
+    }
 }

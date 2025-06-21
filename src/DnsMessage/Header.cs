@@ -18,10 +18,52 @@ public class Header
     public ushort AuthorityCount { get; set; }
     public ushort AdditionalCount { get; set; }
 
-    public Header(byte[] bytes)
+    public Header()
     {
-        Decode(bytes);
+        Id = 0;
+        QueryResponse = true;
+        OpCode = 0;
+        AuthoritativeAnswer = false;
+        TruncatedMessage = false;
+        RecursionDesired = false;
+        RecursionAvailable = false;
+        Reserved = 0;
+        ResponseCode = 0;
+        QuestionCount = 0;
+        AnswerCount = 0;
+        AuthorityCount = 0;
+        AdditionalCount = 0;
     }
+
+    public Header(ushort id,
+        bool queryResponse,
+        byte opCode,
+        bool authoritativeAnswer,
+        bool truncatedMessage,
+        bool recursionDesired,
+        bool recursionAvailable,
+        byte reserved,
+        byte responseCode,
+        ushort questionCount,
+        ushort answerCount,
+        ushort authorityCount = 0,
+        ushort additionalCount = 0)
+    {
+        Id = id;
+        QueryResponse = queryResponse;
+        OpCode = opCode;
+        AuthoritativeAnswer = authoritativeAnswer;
+        TruncatedMessage = truncatedMessage;
+        RecursionDesired = recursionDesired;
+        RecursionAvailable = recursionAvailable;
+        Reserved = reserved;
+        ResponseCode = responseCode;
+        QuestionCount = questionCount;
+        AnswerCount = answerCount;
+        AuthorityCount = authorityCount;
+        AdditionalCount = additionalCount;
+    }
+    
     public void Decode(byte[] bytes)
     {
         Id = BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(0, 2));
@@ -53,8 +95,8 @@ public class Header
         var flags = EncodeFlags();
         flags.CopyTo(headerBytes, 2);
         
-        BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(4), 1);
-        BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(6), 1);
+        BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(4), QuestionCount);
+        BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(6), AnswerCount);
         BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(8), AuthorityCount);
         BinaryPrimitives.WriteUInt16BigEndian(headerBytes.AsSpan(10), AdditionalCount);
         
@@ -84,17 +126,8 @@ public class Header
             result[1] |= (1 << 7);
         
         result[1] |= (byte)((Reserved & 0b111) << 4);*/
-
-        if (OpCode == 0)
-        {
-            Console.WriteLine("Op code == 0");
-            result[1] |= (byte)(ResponseCode & 0b1111);
-        }
-        else
-        {
-            Console.WriteLine("Op code != 0");
-            result[1] |= 4;
-        }
+        
+        result[1] |= (byte)(ResponseCode & 0b1111);
         
         return result;
     }

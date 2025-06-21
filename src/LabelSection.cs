@@ -1,12 +1,26 @@
-﻿namespace dns_server;
+﻿using System.Text;
 
-public class LabelSection(string domainName)
+namespace dns_server;
+
+public class LabelSection
 {
-    private readonly string DomainName = domainName;
+    private string _domainName;
+
+    public string DomainName => _domainName;
+
+    public LabelSection(string domainName)
+    {
+        this._domainName = domainName;
+    }
+
+    public LabelSection()
+    {
+        
+    }
 
     public byte[] Encode()
     {
-        var labels = DomainName.Split('.');
+        var labels = _domainName.Split('.');
         List<byte> labelSectionBytes = new List<byte>();
         foreach (var label in labels)
         {
@@ -16,5 +30,26 @@ public class LabelSection(string domainName)
         
         labelSectionBytes.Add(0x00);
         return labelSectionBytes.ToArray();
+    }
+
+    public int Decode(byte[] bytes)
+    {
+        Console.WriteLine($"Label Section Bytes Received: {bytes.Length}");
+        List<string> labels = new List<string>();
+        int index = 0;
+        while (bytes[index] != 0x00)
+        {
+            int length = bytes[index];
+            index++;
+            var contentBytes = bytes.AsSpan(index, length).ToArray();
+            //Array.Reverse(contentBytes);
+            string label = Encoding.UTF8.GetString(contentBytes);
+            Console.WriteLine($"Label Length: {length} :: Label Content: {label}");
+            labels.Add(label);
+            index += length;
+        }
+        
+        _domainName = string.Join(".", labels);
+        return index + 1;
     }
 }
